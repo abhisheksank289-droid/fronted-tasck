@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Dynamic Table Row Creator</title>
+	<style>
+		:root {
+			font-family: Arial, sans-serif;
+			color: #172033;
+			background: #f4f7fb;
+		}
+
+		body {
+			margin: 0;
+			padding: 2rem 1rem;
+		}
+
+		main {
+			width: min(100%, 900px);
+			margin: auto;
+		}
+
+		h1 {
+			margin-bottom: 0.4rem;
+		}
+
+		.intro {
+			margin-top: 0;
+			color: #526078;
+		}
+
+		.panel {
+			padding: 1.25rem;
+			border: 1px solid #d9e0eb;
+			border-radius: 10px;
+			background: #ffffff;
+			box-shadow: 0 10px 25px rgb(23 32 51 / 8%);
+		}
+
+		.entry-form {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr) auto;
+			gap: 0.75rem;
+			align-items: end;
+		}
+
+		label {
+			display: grid;
+			gap: 0.35rem;
+			font-weight: 600;
+		}
+
+		input,
+		select,
+		button {
+			box-sizing: border-box;
+			min-height: 2.6rem;
+			padding: 0.65rem 0.75rem;
+			border: 1px solid #aab5c7;
+			border-radius: 6px;
+			font: inherit;
+		}
+
+		button {
+			border-color: #1d4ed8;
+			background: #1d4ed8;
+			color: #ffffff;
+			cursor: pointer;
+			font-weight: 600;
+		}
+
+		button:hover {
+			background: #1e40af;
+		}
+
+		.table-wrap {
+			margin-top: 1.5rem;
+			overflow-x: auto;
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			background: #ffffff;
+		}
+
+		th,
+		td {
+			padding: 0.85rem;
+			border-bottom: 1px solid #e2e8f0;
+			text-align: left;
+		}
+
+		th {
+			background: #eef3fb;
+			color: #334155;
+			font-size: 0.9rem;
+		}
+
+		.delete-button {
+			min-height: auto;
+			padding: 0.4rem 0.6rem;
+			border-color: #c2410c;
+			background: #c2410c;
+			font-size: 0.9rem;
+		}
+
+		.delete-button:hover {
+			background: #9a3412;
+		}
+
+		#empty-message {
+			padding: 1.25rem;
+			color: #64748b;
+			text-align: center;
+		}
+
+		@media (max-width: 700px) {
+			.entry-form {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
+</head>
+<body>
+	<main>
+		<h1>Team members</h1>
+		<p class="intro">Add people to the table using the form below.</p>
+
+		<section class="panel" aria-labelledby="add-member-heading">
+			<h2 id="add-member-heading">Add a member</h2>
+			<form id="member-form" class="entry-form">
+				<label for="name">Name
+					<input id="name" name="name" type="text" required>
+				</label>
+				<label for="email">Email
+					<input id="email" name="email" type="email" required>
+				</label>
+				<label for="role">Role
+					<select id="role" name="role">
+						<option>Designer</option>
+						<option>Developer</option>
+						<option>Manager</option>
+					</select>
+				</label>
+				<button type="submit">Add row</button>
+			</form>
+
+			<div class="table-wrap">
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Email</th>
+							<th>Role</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody id="member-rows">
+						<tr id="empty-row">
+							<td id="empty-message" colspan="4">No members added yet.</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+	</main>
+
+	<script>
+		const memberForm = document.querySelector('#member-form');
+		const memberRows = document.querySelector('#member-rows');
+
+		memberForm.addEventListener('submit', (event) => {
+			event.preventDefault();
+
+			const formData = new FormData(memberForm);
+			const row = document.createElement('tr');
+			row.innerHTML = `
+				<td>${escapeHtml(formData.get('name'))}</td>
+				<td>${escapeHtml(formData.get('email'))}</td>
+				<td>${escapeHtml(formData.get('role'))}</td>
+				<td><button class="delete-button" type="button">Delete</button></td>
+			`;
+
+			document.querySelector('#empty-row')?.remove();
+			memberRows.append(row);
+			memberForm.reset();
+			document.querySelector('#name').focus();
+		});
+
+		memberRows.addEventListener('click', (event) => {
+			if (!event.target.matches('.delete-button')) return;
+
+			event.target.closest('tr').remove();
+			if (!memberRows.querySelector('tr')) {
+				memberRows.innerHTML = '<tr id="empty-row"><td id="empty-message" colspan="4">No members added yet.</td></tr>';
+			}
+		});
+
+		function escapeHtml(value) {
+			const element = document.createElement('span');
+			element.textContent = value;
+			return element.innerHTML;
+		}
+	</script>
+</body>
+</html>
